@@ -1,57 +1,82 @@
 package rishabh;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class TcpClientSocket implements Runnable {
 
+
+    //the guy who initially send the connection request to another peers server'
+//but how does this guy listen for messages? and how does the guy who accepts send messages?
     private InetAddress peerIp;
     private int peerPort;
     private String msg;
     private Socket socket = null;
-    private OutputStream out;
-    private InputStream in;
+    private PrintWriter out;
+    private BufferedReader in;
     private boolean isChatting;
     private Scanner sc;
     private String peerName;
-    public TcpClientSocket(PeerInfo peer) throws IOException {
+
+    private PrintWriter chatWriter = new PrintWriter(new FileWriter("chats.txt", true));
+
+
+    public TcpClientSocket(PeerInfo peer, int tcpClientPort, int localTcpPort) throws IOException {
         this.peerIp = peer.getAddress();
-        this.peerPort = 8080;
-        this.sc = new Scanner(System.in);
-        this.socket = new Socket(peerIp, peerPort);
+        this.peerPort = tcpClientPort;
+        this.sc = new Scanner(System.in); // right now testing from the same ip on diff. terminals;
+        this.socket = new Socket(peerIp, peerPort, null, localTcpPort);//this is the port i am sending the tcp socket connection request to but i should not this beforehand i should get this port from the other peer himself but for now i am just testing;
         this.isChatting = true;
         this.peerName = peer.getUsername();
-
     }
 
     @Override
     public void run() {
-        try (
-             OutputStream out = socket.getOutputStream();
-             InputStream in = socket.getInputStream()) {
-            System.out.println("start of the chat with "+ peerIp);
-            while(isChatting){
-                System.out.print("["+peerName+"]: ");
-                String msg = sc.nextLine();
-                if(msg.startsWith("/end")){
-                   break;
-                }
-                out.write((msg+"\n").getBytes()); // ont he tcp server end the output was displayed together because the readline kept reading until it found \n so after every input adding a \n to kkeep the messages real time;
-                out.flush();
-            }
-            socket.close();
-            System.out.println("thread closed");
+
+        System.out.println("start of the chat with " + peerIp);
+        //can give the socket to the writer thread that can use the ip to send messages;
+        //adn here ii only recieve meessages and display;
+
+        try {
+            out = new PrintWriter(socket.getOutputStream(), true);
         } catch (IOException e) {
-            try {
-                socket.close();
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-            System.err.println("Error during TCP communication: " + e.getMessage());
+            throw new RuntimeException(e);
         }
+        try {
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        Writer writer = null;
+        try {
+            writer = new Writer(socket, out, in);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Thread writerThread = new Thread(writer);
+        writerThread.start(); // not joining coz i want the reader to keep reading the messages too
+
+
+        String msg;
+        while (true) {
+            try {
+                if ((msg = in.readLine()) == null) break;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+//            System.out.println(socket.getRemoteSocketAddress()+"-> remote  ->"+socket.getLocalAddress()+":"+socket.getLocalPort());
+            System.out.println("[Peer]: " + msg);
+        }
+
+        try {
+            socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
     }
 }

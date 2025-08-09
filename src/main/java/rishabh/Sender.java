@@ -11,24 +11,31 @@ public class Sender implements Runnable {
     private DatagramSocket senderSocket;
     private InetAddress address;
     private String msg = "from pc";
-
+    private int sendPort;
     private byte[] buff;
 
-    public Sender() throws SocketException, UnknownHostException {
+    public Sender(int udpbroadcastport, int sendPort) throws SocketException, UnknownHostException {
         this.buff = msg.getBytes();
-        this.senderSocket = new DatagramSocket(9696);
+        this.sendPort = sendPort;
+        this.senderSocket = new DatagramSocket(udpbroadcastport);
         this.address =InetAddress.getByName("192.168.137.255"); // the wifi-6 broadcast ip;
         //now here the address would be the subnet address that i would need to calculate;
     }
 
     @Override
     public void run() {
-        DatagramPacket packet = new DatagramPacket(buff,buff.length, address, 6969);
+        DatagramPacket packet = new DatagramPacket(buff,buff.length, address, sendPort);
         try {
-            senderSocket.send(packet);
-            System.out.println("packet sent");
+            for(int j=0;j<3;j++){
+                senderSocket.send(packet);
+//                System.out.println("packet sent");
+                Thread.sleep(5000);
+            }
         } catch (IOException e) {
             senderSocket.close();
+            throw new RuntimeException(e);
+        }
+        catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         senderSocket.close();
