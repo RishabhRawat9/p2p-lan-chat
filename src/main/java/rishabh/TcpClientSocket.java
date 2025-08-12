@@ -2,8 +2,10 @@ package rishabh;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TcpClientSocket implements Runnable {
 
@@ -16,7 +18,7 @@ public class TcpClientSocket implements Runnable {
     private Socket socket = null;
     private PrintWriter out;
     private BufferedReader in;
-    private boolean isChatting;
+    private AtomicBoolean isChatting = new AtomicBoolean(true);
     private Scanner sc;
     private String peerName;
 
@@ -27,8 +29,8 @@ public class TcpClientSocket implements Runnable {
         this.peerIp = peer.getAddress();
         this.peerPort = tcpClientPort;
         this.sc = new Scanner(System.in); // right now testing from the same ip on diff. terminals;
-        this.socket = new Socket(peerIp, peerPort, null, localTcpPort);//this is the port i am sending the tcp socket connection request to but i should not this beforehand i should get this port from the other peer himself but for now i am just testing;
-        this.isChatting = true;
+        this.socket = new Socket();//this is the port i am sending the tcp socket connection request to but i should not this beforehand i should get this port from the other peer himself but for now i am just testing;
+        this.socket.connect(new InetSocketAddress(peerIp, peerPort));
         this.peerName = peer.getUsername();
     }
 
@@ -52,7 +54,7 @@ public class TcpClientSocket implements Runnable {
 
         Writer writer = null;
         try {
-            writer = new Writer(socket, out, in);
+            writer = new Writer(socket, out, in, isChatting);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -60,23 +62,26 @@ public class TcpClientSocket implements Runnable {
         writerThread.start(); // not joining coz i want the reader to keep reading the messages too
 
 
-        String msg;
-        while (true) {
-            try {
+        String msg ="";
+        while (isChatting.get()) {
+            try {//jb writer socket close kr deta hai tb yha socket exception aajata hai because closed socket me se read krne ki koshish
                 if ((msg = in.readLine()) == null) break;
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                System.out.println("socket is closed");
+                isChatting.set(false);
             }
-//            System.out.println(socket.getRemoteSocketAddress()+"-> remote  ->"+socket.getLocalAddress()+":"+socket.getLocalPort());
+            if(msg.startsWith("/end")){
+                isChatting.set(false);
+            }
+            //            System.out.println(socket.getRemoteSocketAddress()+"-> remote  ->"+socket.getLocalAddress()+":"+socket.getLocalPort());
             System.out.println("[Peer]: " + msg);
         }
+        System.out.println("clsoing client socket");
 
         try {
             socket.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-
     }
 }

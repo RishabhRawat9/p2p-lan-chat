@@ -50,6 +50,7 @@ public class Listener implements Runnable {
         Thread tcpClientThread = new Thread(clientSocket);
         tcpClientThread.start();
         tcpClientThread.join();//when chatting with peer we don't do anything else on the main thread ;
+        //main loop execution continues;
     }
 
 
@@ -85,7 +86,7 @@ public class Listener implements Runnable {
 
             while (true) {
                 try {
-                    if (tcpClientHandlerThread != null) {
+                    if (tcpClientHandlerThread != null && tcpClientHandlerThread.isAlive()) {
                         tcpClientHandlerThread.join();
                         System.out.println("client handler joined");//aabe join hone ke bad thodi print hoga unless end hogya ho
                     }

@@ -5,11 +5,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClientHandler implements Runnable {
     private Socket clientSocket;
     private PrintWriter out;
     private BufferedReader in;
+    private AtomicBoolean isChatting =new AtomicBoolean(true); // using atomic boolean as a flag to tell the reader thread to stop reading once the writer thread sets the flag to false;
 
     public ClientHandler(Socket socket) {
         this.clientSocket = socket;
@@ -37,7 +39,7 @@ public class ClientHandler implements Runnable {
         }
         Writer writer = null;
         try {
-            writer = new Writer(clientSocket, out,in);
+            writer = new Writer(clientSocket, out,in, isChatting);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -46,18 +48,16 @@ public class ClientHandler implements Runnable {
 
         String inputLine; // for the server connection the main loop thread still keeps running i need to block that aswell;
 
-
-
         //the main loop thread is supposed to wait until this client handler is being run;
 
-        while (true) {
+        while (isChatting.get()) {
             try {
                 if ((inputLine = in.readLine()) == null) break;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             if ("/end".equals(inputLine)) {
-                break;
+                isChatting.set(false);
             }
             System.out.println("[peer]: "+ inputLine);
         }
