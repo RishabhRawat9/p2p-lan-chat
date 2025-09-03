@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.*;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -15,14 +17,13 @@ public class Listener implements Runnable {
     private byte[] messageBuffer = new byte[2048];
     private final Scanner scanner = new Scanner(System.in);
     private final Map<Integer, PeerInfo> peerList = new ConcurrentHashMap<>();
-    public Set<String> peers = new HashSet<>();
+    public Set<String> peers = new HashSet<>(); // this ain't thread safe; but not shared b/w multiple things;
+
+
     private PeerInfo selectedPeer;
     public int tcpServerPort;
-
-
     //at a time only one peer we can chat with;
 
-    public Set<String> clients; // after a client is added we migth need to start a tcp connection for chat aswell wil the chat be one on one or group?
 
     private boolean running;
     //for storing broadcast messages from peers;
@@ -36,17 +37,13 @@ public class Listener implements Runnable {
     }
 
 
-    public Listener(int udpListenerPort, int tcpClientPort, int tcpServerPort) throws SocketException, UnknownHostException {
+    public Listener(int udpListenerPort) throws SocketException, UnknownHostException {
         this.socket = new DatagramSocket(new InetSocketAddress("0.0.0.0", udpListenerPort));
-        this.tcpClientPort = tcpClientPort;
-        this.tcpServerPort = tcpServerPort;
 
     }
 
-
     private void sendToPeer(PeerInfo peer) throws IOException, InterruptedException {
-
-        TcpClientSocket clientSocket = new TcpClientSocket(peer, tcpClientPort, tcpServerPort);
+        TcpClientSocket clientSocket = new TcpClientSocket(peer, peer.getTcpChatPort());
         Thread tcpClientThread = new Thread(clientSocket);
         tcpClientThread.start();
         tcpClientThread.join();//when chatting with peer we don't do anything else on the main thread ;
@@ -60,19 +57,21 @@ public class Listener implements Runnable {
         running = true;
         startInputLoop();
         while (running) {
+            //for recieving packets;
+
             DatagramPacket message = new DatagramPacket(messageBuffer, messageBuffer.length);
             try {
 //                System.out.println("server listeninng: " + socket.getLocalAddress() + " " + socket.getLocalPort());
                 socket.receive(message);// blocks execution here until a message has arrived;
+                int receivedNumber = ByteBuffer.wrap(messageBuffer).getInt();
+                //now the peerPort is in the message parse it and when making new peerinfo obj set it as tcpchatport;
 
-                //so from the packet retrieve the senders ip and port and then make a formatted string of the peer info and then store
                 InetAddress senderAddr = message.getAddress();
 
-                int senderPort = message.getPort();
-                String entry = String.format("%s:%d", senderAddr, senderPort);//for now hardcoding the values;
+                int senderPort = message.getPort(); // this is port from which the udp packet came;
 
+                String entry = String.format("%s:%d:%d", senderAddr, senderPort, receivedNumber);//for now hardcoding the values;
                 peers.add(entry);
-
             } catch (IOException e) {
                 socket.close();
                 throw new RuntimeException(e);
@@ -83,11 +82,12 @@ public class Listener implements Runnable {
 
     private void startInputLoop() {
         new Thread(() -> {
-
             while (true) {
                 try {
                     if (tcpClientHandlerThread != null && tcpClientHandlerThread.isAlive()) {
                         tcpClientHandlerThread.join();
+                        //if some chat is going on then this thread is blcoke;d
+
                         System.out.println("client handler joined");//aabe join hone ke bad thodi print hoga unless end hogya ho
                     }
                     else{
@@ -133,11 +133,12 @@ public class Listener implements Runnable {
     private void showPeers() throws UnknownHostException {
         int j = 1;
         for (String peer : peers) {
-            String addr[] = peer.split(":");
+            String[] addr = peer.split(":");
             String host = addr[0];
             host = host.replaceFirst("^/", "");
-            peerList.put(j++, new PeerInfo("user", InetAddress.getByName(host), Integer.parseInt(addr[1])));
-        }
+            peerList.put(j++, new PeerInfo("user", InetAddress.getByName(host), Integer.parseInt(addr[1]), Integer.parseInt(String.valueOf(addr[2]))));
+        }//building from peers set but how do you invalidate peers that have gone offline but still remain in the peers set;
+
         System.out.println("Available peers:");
         System.out.println(peerList);
         System.out.println(peers);

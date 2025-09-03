@@ -6,30 +6,33 @@ import java.net.UnknownHostException;
 public class App {
     public static void main(String[] args) throws SocketException, UnknownHostException, InterruptedException {
 
-        int udpBroadCastPort = Integer.parseInt(args[0]);
+        LanternaUi gui = new LanternaUi();
+        try {
+            gui.createLayout();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+
+        // udp
+        int udpBroadCastPort = Integer.parseInt(args[0]); // iss port se packets bhejenge
         int udpListenPort = Integer.parseInt(args[1]);
-        int tcpPort = Integer.parseInt(args[2]); // sending connection request to this port;
-        int sendBroadCastPort = Integer.parseInt(args[3]); // sending udp packets to this port;
-        int tcpServerPort = Integer.parseInt(args[4]);
-        int localTcpPort = Integer.parseInt(args[5]);
+        int sendBroadCastPort = Integer.parseInt(args[2]); // sending udp packets to this port;
+        // passing the broadcast on other device to this port;
+        int tcpServerPort = Integer.parseInt(args[3]);
+        Sender sender = new Sender(udpBroadCastPort, sendBroadCastPort, tcpServerPort);
+        //
+        // int tcpPort = Integer.parseInt(args[2]); // sending connection request to
+        // this port;
 
-        ClientHandler tcpClientHandler = new ClientHandler();//hasn't started yet;
+        ClientHandler tcpClientHandler = new ClientHandler();// hasn't started yet;
 
-
-        Sender sender = new Sender(udpBroadCastPort, sendBroadCastPort);
-
-        Listener listener = new Listener(udpListenPort, tcpPort, localTcpPort);
+        Listener listener = new Listener(udpListenPort);
         TcpServerSocket tcpServer = new TcpServerSocket(tcpServerPort, tcpClientHandler, listener);
         Thread serverThread = new Thread(tcpServer);
-
-
         serverThread.start();
 
         Thread lTHread = new Thread(listener);
-
-
         Thread sThread = new Thread(sender);
-
 
         sThread.start();
         lTHread.start();

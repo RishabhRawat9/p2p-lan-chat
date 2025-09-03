@@ -25,19 +25,19 @@ public class TcpClientSocket implements Runnable {
     private PrintWriter chatWriter = new PrintWriter(new FileWriter("chats.txt", true));
 
 
-    public TcpClientSocket(PeerInfo peer, int tcpClientPort, int localTcpPort) throws IOException {
+    public TcpClientSocket(PeerInfo peer, int tcpClientPort) throws IOException {
         this.peerIp = peer.getAddress();
         this.peerPort = tcpClientPort;
         this.sc = new Scanner(System.in); // right now testing from the same ip on diff. terminals;
-        this.socket = new Socket();//this is the port i am sending the tcp socket connection request to but i should not this beforehand i should get this port from the other peer himself but for now i am just testing;
+        this.socket = new Socket();//this is the port i am sending the tcp socket connection request to but i should not know this beforehand i should get this port from the other peer himself but for now i am just testing;
         this.socket.connect(new InetSocketAddress(peerIp, peerPort));
-        this.peerName = peer.getUsername();
+        this.peerName = peer.getUsername(); // a random port for this socket is given by the os;
     }
 
     @Override
     public void run() {
 
-        System.out.println("start of the chat with " + peerIp);
+        System.out.println("start of the chat with " + peerName);
         //can give the socket to the writer thread that can use the ip to send messages;
         //adn here ii only recieve meessages and display;
 

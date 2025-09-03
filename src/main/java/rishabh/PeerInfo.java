@@ -5,12 +5,17 @@ import java.net.InetAddress;
 public class PeerInfo {
     private final String username;
     private final InetAddress address;
-    private final int port;
+    private final int port; // ye port udp broadcast wala port hoga dusre peer ka;
+    private int tcpChatPort;
 
-    public PeerInfo(String username, InetAddress address, int port) {
+    public PeerInfo(String username, InetAddress address, int port, int tcpChatPort) {
         this.username = username;
         this.address = address;
         this.port = port;
+        this.tcpChatPort = tcpChatPort;
+    }
+    public int getTcpChatPort(){
+        return tcpChatPort;
     }
 
     public String getUsername() { return username; }
