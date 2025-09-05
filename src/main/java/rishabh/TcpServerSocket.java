@@ -1,30 +1,35 @@
 package rishabh;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import com.googlecode.lanterna.gui2.TextBox;
+
+import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.Instant;
 
 public class TcpServerSocket implements Runnable {
     private ServerSocket serverSocket;
-
     private int port;
 
     public ClientHandler clientHandler;
+    private PrintWriter logging = new PrintWriter("log2.txt");
 
     public Listener listenerObj; //udp listener btw;
+    private LanternaUi gui;
 
-    public TcpServerSocket(int port, ClientHandler clientHandler, Listener listenerObj){
+    private BufferedReader in;
+    private TextBox messageArea;
+
+    public TcpServerSocket(int port, ClientHandler clientHandler, Listener listenerObj, LanternaUi gui) throws FileNotFoundException {
         this.port = port;
+        this.gui = gui;
         this.clientHandler = clientHandler;
         this.listenerObj = listenerObj;
-
     }
 
     @Override
-    public void run()  {
+    public void run() {
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
@@ -33,25 +38,50 @@ public class TcpServerSocket implements Runnable {
         while (true) {
             try {
                 Socket clientSocket = serverSocket.accept(); // blocked here;
-//                this.clientHandler.setSocket(clientSocket);
-                System.out.println("connection request came");
+                //now for the conn receiver peer you have to select him the peer aswell
+                PeerInfo connectedPeer = new PeerInfo("peer", InetAddress.getByName("1.1.1.1"), clientSocket.getPort(), 00, Instant.now());
+                gui.setSelectedPeer(connectedPeer);
+                logging.append("connection received\n");
+                logging.flush();
+                gui.setPeerOutStream(new PrintWriter(clientSocket.getOutputStream()));
+                in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-                //now is the time to block the mainloop thread and continue it when the chat is done or one of the clients closes the scoket and i alsoe need to handle that gracefullly lke when one part closes the chat no errors are thrown i just go back to the mainloop thread;
-
-                Thread clientThread = new Thread(new ClientHandler(clientSocket));//jo main me iska obj bna that usiko reuse kre hai diff. threads me;
-                listenerObj.setChatThread(clientThread);//now here this value is set and in the listener i can join() this thread so that the litener thread execution is blocked until the chatThread is not done;
-                clientThread.start(); // will need to spawn new threads every time a reuqest comes in;
-                clientThread.join();
-                listenerObj.setChatThread(null);//like after its done then i don't need to keep refernceing so that gc can collect it
-                System.out.println("chat over : server listening for connecctions");
-                //the server would keep running only the client handler thread is closed;
-            } catch (IOException | InterruptedException e) {
+                gui.updateStatus(clientSocket.getOutputStream().toString());
+//                gui.updateStatus("chat connected with peer");
+                //now this server can listen for messages as long as the clientsocket lives;
+                String msg = "";
+                while (true) {
+                    try {//jb writer socket close kr deta hai tb yha socket exception aajata hai because closed socket me se read krne ki koshish
+                        if ((msg = in.readLine()) == null) break;
+                        else {
+                            gui.updateMessage("[Peer]: " + msg);
+                            logging.append("msg received: ").append(msg).append("\n");
+                        }
+                    } catch (IOException e) {
+                        logging.append("socket is closed");
+                        break;
+                    }
+                    if (msg.startsWith("/end")) {
+                        clientSocket.close();
+                        break;
+                    }
+                    logging.flush();
+                }
+                try {
+                    clientSocket.close();
+                } catch (IOException e) {
+                    logging.append("exception thrown server1");
+                    logging.flush();
+                    throw new RuntimeException(e);
+                }
+            } catch (IOException e) {
+                logging.append("execpetion thrown server 2");
+                logging.flush();
                 throw new RuntimeException(e);
             }
         }
 
     }
-
 
 
 }

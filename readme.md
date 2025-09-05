@@ -5,3 +5,5 @@
 # the error with trying to chat again to the user is unable to setup the socket with the same local port and ip it's because java takes around 1-3 mins before you can reuse the same socket again .--> don't have to bind explicitly just use os given ports;
 # having problems when trying to setup chat again with some peer after the first time;-> fixed
 # for now stopping the project, might continue later with lanterna, handling multiple peers rather than just one.
+
+hahhaha
