@@ -73,17 +73,6 @@ public class TcpClientSocket implements Runnable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-//        i don't need the writer for now the ui thread can handle it;
-//        Writer writer = null;
-//        try {
-//            writer = new Writer(socket, out, in, isChatting, inputBox);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//        Thread writerThread = new Thread(writer);
-//        writerThread.start(); // not joining coz i want the reader to keep reading the messages too
-
-
         String msg ="";
         while (true) {
             try {//jb writer socket close kr deta hai tb yha socket exception aajata hai because closed socket me se read krne ki koshish
@@ -101,7 +90,6 @@ public class TcpClientSocket implements Runnable {
             logging.flush();
 
         }
-
 
         try {
             socket.close();

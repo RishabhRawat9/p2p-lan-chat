@@ -12,7 +12,7 @@ public class TcpServerSocket implements Runnable {
     private ServerSocket serverSocket;
     private int port;
 
-    public ClientHandler clientHandler;
+
     private PrintWriter logging = new PrintWriter("log2.txt");
 
     public Listener listenerObj; //udp listener btw;
@@ -21,10 +21,9 @@ public class TcpServerSocket implements Runnable {
     private BufferedReader in;
     private TextBox messageArea;
 
-    public TcpServerSocket(int port, ClientHandler clientHandler, Listener listenerObj, LanternaUi gui) throws FileNotFoundException {
+    public TcpServerSocket(int port, Listener listenerObj, LanternaUi gui) throws FileNotFoundException {
         this.port = port;
         this.gui = gui;
-        this.clientHandler = clientHandler;
         this.listenerObj = listenerObj;
     }
 

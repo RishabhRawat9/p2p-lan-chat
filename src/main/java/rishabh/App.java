@@ -37,13 +37,13 @@ public class App {
         //
         // int tcpPort = Integer.parseInt(args[2]); // sending connection request to
         // this port;
-        ClientHandler tcpClientHandler =null;
+
         Listener listener = new Listener(udpListenPort, gui);
 
         listener.setPeers(peers);
         listener.setPeerList(peerList);
 
-        TcpServerSocket tcpServer = new TcpServerSocket(tcpServerPort, tcpClientHandler, listener, gui);
+        TcpServerSocket tcpServer = new TcpServerSocket(tcpServerPort, listener, gui);
         Thread serverThread = new Thread(tcpServer);
         serverThread.start();
 

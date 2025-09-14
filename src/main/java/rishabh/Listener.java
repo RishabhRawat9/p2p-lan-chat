@@ -116,60 +116,6 @@ public class Listener implements Runnable {
         }
         socket.close();
     }
-    private void startInputLoop() {
-        new Thread(() -> {
-            while (true) {
-                try {
-                    if (tcpClientHandlerThread != null && tcpClientHandlerThread.isAlive()) {
-                        tcpClientHandlerThread.join();
-                        //if some chat is going on then this thread is blcoke;d
-
-                        System.out.println("client handler joined");//aabe join hone ke bad thodi print hoga unless end hogya ho
-                    } else {
-                        System.out.println("client handler null");
-                    }
-                    // now siince this is a obj if the state of the arg cahnges then join() works;
-
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                String input = scanner.nextLine().trim();
-
-
-            }
-        }).start();
-    }
-
-    private void showPeers() throws UnknownHostException {
-        int j = 1;
-        for (String peer : peers) {
-            String[] addr = peer.split(":");
-            String host = addr[0];
-            host = host.replaceFirst("^/", "");
-//            peerList.put(j++, new PeerInfo("user", InetAddress.getByName(host), Integer.parseInt(addr[1]), Integer.parseInt(String.valueOf(addr[2]))));
-        }//building from peers set but how do you invalidate peers that have gone offline but still remain in the peers set;
-
-        System.out.println("Available peers:");
-        System.out.println(peerList);
-        System.out.println(peers);
-        peerList.forEach((id, peer) -> System.out.println("[" + id + "] " + peer));
-    }
-
-    private void handleSelect() throws UnknownHostException {
-        showPeers();
-        System.out.print("Enter peer number to select");
-        String line = scanner.nextLine();
-        try {
-            int id = Integer.parseInt(line.trim());
-            if (peerList.containsKey(id)) {
-                selectedPeer = peerList.get(id);
-            } else {
-                System.out.println("Invalid ID: " + id);
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input: " + line);
-        }
-    }
 
 
 }
