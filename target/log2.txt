@@ -1,3 +1,2 @@
 connection received
 msg received: /chat
-msg received: /hi

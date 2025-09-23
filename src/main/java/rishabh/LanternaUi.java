@@ -1,13 +1,16 @@
 package rishabh;
-
+import com.googlecode.lanterna.graphics.*;
+import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.SimpleTheme;
+import com.googlecode.lanterna.graphics.Theme;
 import com.googlecode.lanterna.gui2.*;
 import com.googlecode.lanterna.gui2.BorderLayout;
 import com.googlecode.lanterna.gui2.Button;
 import com.googlecode.lanterna.gui2.Label;
 import com.googlecode.lanterna.gui2.Panel;
 import com.googlecode.lanterna.gui2.Window;
+import com.googlecode.lanterna.gui2.TextBox.DefaultTextBoxRenderer;
 import com.googlecode.lanterna.gui2.dialogs.MessageDialog;
 import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
@@ -32,7 +35,6 @@ public class LanternaUi {
     private Panel peersPanel;
     private Label statusLabel;
     private Button sendButton;
-
     private PeerInfo selectedPeer;
 
     private Map<Integer, PeerInfo> peerList;
@@ -63,6 +65,11 @@ public class LanternaUi {
     }
 
     private volatile boolean running = true;
+    Theme theme = new SimpleTheme(
+            TextColor.ANSI.BLACK_BRIGHT,
+            TextColor.ANSI.RED_BRIGHT
+    );
+
 
     public void createLayout() throws IOException {
         Terminal terminal = new DefaultTerminalFactory().createTerminal();
@@ -103,8 +110,9 @@ public class LanternaUi {
         Panel inputPanel = new Panel();
         inputPanel.setLayoutManager(new LinearLayout(Direction.VERTICAL));
         inputBox = new TextBox().setPreferredSize(new TerminalSize(60, 3));
-        inputPanel.setTheme(new SimpleTheme(TextColor.ANSI.CYAN, TextColor.ANSI.BLACK));
-        inputBox.setTheme(new SimpleTheme(TextColor.ANSI.MAGENTA_BRIGHT, TextColor.ANSI.BLACK));
+
+        inputBox.setTheme(theme);
+
 
         inputBox.setInputFilter((interactable, key) -> {
             if (key.getKeyType() == KeyType.Enter) {

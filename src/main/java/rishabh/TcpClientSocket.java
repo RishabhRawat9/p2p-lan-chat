@@ -43,7 +43,10 @@ public class TcpClientSocket implements Runnable {
         this.inputBox = inputBox;
         this.sc = new Scanner(System.in); // right now testing from the same ip on diff. terminals;
         this.socket = new Socket();//this is the port i am sending the tcp socket connection request to but i should not know this beforehand i should get this port from the other peer himself but for now i am just testing;
+        logging.println(peerPort);
+        logging.flush();
         this.socket.connect(new InetSocketAddress(peerIp, peerPort));
+
         this.peerName = peer.getUsername(); // a random port for this socket is given by the os;
     }
 
@@ -94,7 +97,9 @@ public class TcpClientSocket implements Runnable {
         try {
             socket.close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            logging.append(e.toString());
+            logging.flush();
+
         }
     }
 }

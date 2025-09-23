@@ -3,10 +3,17 @@ package rishabh;
 import java.io.FileNotFoundException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class App {
 
@@ -23,20 +30,18 @@ public class App {
     private static final Map<Integer, PeerInfo> peerList = new ConcurrentHashMap<>();
     public static Set<String> peers = new HashSet<>(); // this ain't thread safe; but not shared b/w multiple things;
 
-    public static void main(String[] args) throws SocketException, UnknownHostException, InterruptedException, FileNotFoundException {
+    public static void main(String[] args) throws SocketException, UnknownHostException, InterruptedException, FileNotFoundException{
 
 
         // udp
-        int udpBroadCastPort = Integer.parseInt(args[0]); // iss port se packets bhejenge
-        int udpListenPort = Integer.parseInt(args[1]);
+        int udpBroadCastPort = 0; // iss port se packets bhejenge
+        int udpListenPort = Integer.parseInt(args[0]);
 
-        int sendBroadCastPort = Integer.parseInt(args[2]); // sending udp packets to this port;
+        int sendBroadCastPort = Integer.parseInt(args[1]); // sending udp packets to this port;
         // passing the broadcast on other device to this port;
-        int tcpServerPort = Integer.parseInt(args[3]);
+        int tcpServerPort = Integer.parseInt(args[2]);
         Sender sender = new Sender(udpBroadCastPort, sendBroadCastPort, tcpServerPort);
-        //
-        // int tcpPort = Integer.parseInt(args[2]); // sending connection request to
-        // this port;
+
 
         Listener listener = new Listener(udpListenPort, gui);
 
@@ -54,6 +59,7 @@ public class App {
         sThread.join();
         lTHread.join();
         serverThread.join();
+
 
     }
 }

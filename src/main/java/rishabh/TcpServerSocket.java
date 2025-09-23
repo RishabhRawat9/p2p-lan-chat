@@ -32,7 +32,8 @@ public class TcpServerSocket implements Runnable {
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            logging.append(e.toString());
+            logging.flush();
         }
         while (true) {
             try {
@@ -75,8 +76,9 @@ public class TcpServerSocket implements Runnable {
                 }
             } catch (IOException e) {
                 logging.append("execpetion thrown server 2");
+                logging.append(e.toString());
                 logging.flush();
-                throw new RuntimeException(e);
+
             }
         }
 

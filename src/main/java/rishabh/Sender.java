@@ -20,6 +20,7 @@ public class Sender implements Runnable {
         //iss port pe tcp connection ki request bhej ske;
         this.sendPort = sendPort;
         this.senderSocket = new DatagramSocket(udpbroadcastport);//binding udp socket to this port
+
         this.address =InetAddress.getByName("172.21.31.255"); // the wifi-6 broadcast ip;test from wsl
 
         //now here the address would be the subnet address that i would need to calculate;
