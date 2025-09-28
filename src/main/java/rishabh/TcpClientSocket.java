@@ -32,7 +32,7 @@ public class TcpClientSocket implements Runnable {
     private PrintWriter clientOut;
     private BufferedReader clientIn;
 
-    private PrintWriter chatWriter = new PrintWriter(new FileWriter("chats.txt", true));
+
 
     private TextBox inputBox;
     private LanternaUi gui;
@@ -91,7 +91,6 @@ public class TcpClientSocket implements Runnable {
             gui.updateMessage("[Peer]: "+ msg);
             logging.append(msg);
             logging.flush();
-
         }
 
         try {

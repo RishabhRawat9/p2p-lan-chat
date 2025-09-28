@@ -180,6 +180,7 @@ public class LanternaUi {
                             .setForegroundColor(TextColor.ANSI.CYAN);
                     peersPanel.addComponent(peerLabel);
                 });
+                peersPanel.addComponent(new Label(String.valueOf(peerList.size())));
                 peersPanel.invalidate();//tell the gui thread to redraw this component;
             });
         }

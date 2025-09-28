@@ -2,6 +2,7 @@ rishabh/LanternaUi.class
 rishabh/Listener.class
 rishabh/App.class
 rishabh/PeerInfo.class
+rishabh/PeerInvalidator.class
 rishabh/Sender.class
 rishabh/TcpClientSocket.class
 rishabh/TcpServerSocket.class

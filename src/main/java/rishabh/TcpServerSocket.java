@@ -39,7 +39,7 @@ public class TcpServerSocket implements Runnable {
             try {
                 Socket clientSocket = serverSocket.accept(); // blocked here;
                 //now for the conn receiver peer you have to select him the peer aswell
-                PeerInfo connectedPeer = new PeerInfo("peer", InetAddress.getByName("1.1.1.1"), clientSocket.getPort(), 00, Instant.now());
+                PeerInfo connectedPeer = new PeerInfo("peer", InetAddress.getByName("1.1.1.1"), clientSocket.getPort(), 00);
                 gui.setSelectedPeer(connectedPeer);
                 logging.append("connection received\n");
                 logging.flush();

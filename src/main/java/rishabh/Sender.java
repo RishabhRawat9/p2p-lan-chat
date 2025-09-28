@@ -32,7 +32,7 @@ public class Sender implements Runnable {
         //packet goes to this address and port;
 
         try {
-            for(int j=0;j<3;j++){
+            for(int j=0;j<10;j++){
                 senderSocket.send(packet);
 //                System.out.println("packet sent");
                 Thread.sleep(5000);

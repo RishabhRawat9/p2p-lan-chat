@@ -10,14 +10,18 @@ public class PeerInfo {
     private final int port; // ye port udp broadcast wala port hoga dusre peer ka;
     private int tcpChatPort;
     public Instant lastPacketTime;
+    public long ttl =10000;
+    public long expireTime ;
 
 
-    public PeerInfo(String username, InetAddress address, int port, int tcpChatPort, Instant lastPacketTime) {
+    public PeerInfo(String username, InetAddress address, int port, int tcpChatPort) {
         this.username = username;
         this.address = address;
         this.port = port; // udp port from where the broadcast message came from not required.
         this.tcpChatPort = tcpChatPort;
-        this.lastPacketTime =lastPacketTime;
+
+        this.expireTime  = System.currentTimeMillis() + this.ttl;//the current time near about when the packet arrived;
+        //storing the time when the peer should get expired i,.e curr time + ttl;
     }
     public int getTcpChatPort(){
         return tcpChatPort;
@@ -37,6 +41,11 @@ public class PeerInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PeerInfo peerInfo = (PeerInfo) o;
-        return port == peerInfo.port && address.equals(peerInfo.address);
+        return tcpChatPort == peerInfo.tcpChatPort && address.equals(peerInfo.address);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(address, tcpChatPort);
     }
 }
